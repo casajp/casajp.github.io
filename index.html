@@ -56,7 +56,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080706;color:#fff;fon
 <body>
 <main class="app" id="app">
   <div class="scene" id="scene"></div><div class="overlay"></div><div class="doorFlash" id="doorFlash"></div><div class="doorPanel" id="doorPanel"></div><div class="fade" id="fade"></div>
-  <div class="top"><div class="logo">CASA</div><div class="rightTop"><div class="help">左右スワイプで移動</div><a class="topIcon" id="mapTopLink" target="_blank" rel="noopener">住所</a><a class="topIcon" id="telTopLink">℡☎</a><button class="sound" id="soundBtn">🔊</button></div></div>
+  <div class="top"><div class="logo">CASA</div><div class="rightTop"><div class="help">スワイプで移動</div><a class="topIcon" id="mapTopLink" target="_blank" rel="noopener">📍</a><a class="topIcon" id="telTopLink">☎</a><button class="sound" id="soundBtn">🔊</button></div></div>
   <button class="enter" id="enter">🚪 扉をひらく</button>
   <div class="contact" id="contact"><a id="mapLink" target="_blank" rel="noopener">MAP</a><a id="telLink">TEL</a></div>
   <div id="hotspots"></div><div class="arrows"><div class="arrow">‹</div><div class="arrow">›</div></div>
@@ -69,7 +69,7 @@ const A="assets/";
 const SHOP_ADDRESS="鹿児島県鹿児島市上之園町22-15 甲南パークマンション102 カーサ";
 const TEMP_PHONE="099-000-0000";
 const scenes=[
- {img:A+"exterior.jpg",title:"CASA",desc:"左右にスワイプして店内をご覧いただけます。気になる商品がございましたら、お気軽にお問い合わせください。",enter:true,showContact:true,spots:[]},
+ {img:A+"exterior.jpg",title:"CASA",desc:"スワイプで店内をご覧いただけます。気になる商品がございましたら、お気軽にお問い合わせください。",enter:true,showContact:true,spots:[]},
  {img:A+"first.jpg",title:"入ってすぐ",desc:"入口すぐのコーディネート。光る丸をタップすると写真が開きます。",spots:[{x:56,y:42,label:"コーデ",gallery:"clothes",icon:"👗"},{x:22,y:46,label:"バッグ",gallery:"bags",icon:"👜"}]},
  {img:A+"center.jpg",title:"店内中央",desc:"左右スワイプで店内を進みます。気になる商品だけタップしてください。",spots:[{x:48,y:42,label:"ポーチ",gallery:"pouches",icon:"👜"},{x:70,y:37,label:"洋服",gallery:"clothes",icon:"👗"}]},
  {img:A+"pouch1.jpg",title:"ポーチコーナー",desc:"カラフルなポーチをタップで拡大表示できます。",spots:[{x:32,y:40,label:"ポーチ",gallery:"pouches",icon:"👜"},{x:68,y:43,label:"ポーチ",gallery:"pouches",icon:"✨"}]},

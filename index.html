@@ -202,6 +202,16 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080706;color:#fff;fon
 .editModeBadge.show{display:flex}
 .saveToast{position:absolute;left:50%;bottom:calc(110px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(10px);z-index:90;opacity:0;pointer-events:none;background:rgba(0,0,0,.76);border:1px solid rgba(215,180,106,.48);color:#fff8df;border-radius:999px;padding:9px 14px;font-size:13px;backdrop-filter:blur(12px);transition:opacity .22s,transform .22s;white-space:nowrap}
 .saveToast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.iconGalleryManager{margin-top:12px}
+.iconGalleryTop{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0 8px}
+.iconGalleryTop b{font-size:13px;color:#fff8df}
+.iconGalleryUpload{border:1px solid rgba(215,180,106,.44);background:rgba(215,180,106,.20);color:#fff;border-radius:999px;padding:9px 12px;font-size:13px}
+.iconGalleryGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;max-height:260px;overflow:auto;padding:2px}
+.iconGalleryItem{position:relative;border-radius:14px;overflow:hidden;border:1px solid rgba(215,180,106,.32);background:rgba(255,255,255,.06);min-height:92px}
+.iconGalleryItem img{width:100%;height:92px;object-fit:cover;display:block}
+.iconGalleryItem button{position:absolute;right:5px;top:5px;border:0;border-radius:999px;background:rgba(120,0,0,.82);color:#fff;width:30px;height:30px;font-size:15px;display:grid;place-items:center}
+.iconGalleryEmpty{border:1px dashed rgba(215,180,106,.42);border-radius:14px;padding:18px;text-align:center;color:#d8c8a8;font-size:13px;line-height:1.6}
+
 @media(min-width:780px){.app{max-width:520px;left:50%;transform:translateX(-50%);box-shadow:0 0 100px #000}body{background:linear-gradient(90deg,#050403,#17110c,#050403)}}
 </style>
 </head>
@@ -241,7 +251,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080706;color:#fff;fon
     </div>
 
     <div class="ownerTab" id="photoTab"><label class="ownerLabel">追加先グループ</label><select class="ownerSelect" id="uploadGroupSelect"></select><label class="ownerLabel">写真を追加</label><input class="ownerFile" id="cloudinaryFile" type="file" accept="image/*"><button class="ownerSave" id="uploadPhotoBtn">Cloudinaryへアップロード</button><p class="ownerSmall">Cloud Name: q26ljbxw / Preset: casa_unsigned / Folder: casa</p><div class="thumbRow" id="groupThumbs"></div><label class="ownerLabel">新しい写真グループを作成</label><input class="ownerInput" id="newGroupName" placeholder="例：夏のおすすめ"><button class="ownerSave" id="addGroupBtn">グループ追加</button><div class="ownerList" id="groupList"></div></div>
-    <div class="ownerTab active" id="iconTab"><p class="ownerSmall">管理画面はアイコン編集だけ表示しています。<br>「編集開始」を押すと、店内写真上の丸アイコンを移動できます。アイコンを長押しすると、再編集・削除を選べます。空いている場所を長押しすると、画像変更・アイコン追加・ページ追加・ページ削除を選べます。</p><button class="ownerSave" id="startIconEditBtn">編集開始</button><label class="ownerLabel">現在のページ</label><select class="ownerSelect" id="sceneSelectForIcon"></select><div class="ownerList" id="hotspotList"></div></div>
+    <div class="ownerTab active" id="iconTab"><p class="ownerSmall">管理画面はアイコン編集だけ表示しています。<br>「編集開始」を押すと、店内写真上の丸アイコンを移動できます。アイコンを長押しすると、再編集・コピー・削除を選べます。空いている場所を長押しすると、画像変更・貼り付け・アイコン追加・ページ追加・ページ削除を選べます。</p><button class="ownerSave" id="startIconEditBtn">編集開始</button><label class="ownerLabel">現在のページ</label><select class="ownerSelect" id="sceneSelectForIcon"></select><div class="ownerList" id="hotspotList"></div></div>
     <div class="ownerTab" id="shareTab"><button class="ownerSave" id="ownerOpenShare">QR共有画面を開く</button><p class="ownerSmall">右上の🔗からも同じ共有画面を開けます。</p></div>
     <p class="ownerSmall">店主モード：左上を10回タップ / パスワード：Yuika</p>
   </div></section>
@@ -261,11 +271,13 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080706;color:#fff;fon
 
   <div class="iconContextMenu" id="iconContextMenu">
     <button type="button" id="contextEdit">✏️ 再編集</button>
+    <button type="button" id="contextCopyIcon">📋 コピー</button>
     <button type="button" class="danger" id="contextDelete">🗑 削除</button>
   </div>
 
   <div class="iconContextMenu" id="editContextMenu">
     <button type="button" id="contextChangeImage">🖼 画像変更</button>
+    <button type="button" id="contextPasteIcon">📋 貼り付け</button>
     <button type="button" id="contextAddIcon">＋ アイコン追加</button>
     <button type="button" id="contextAddPage">＋ ページ追加</button>
     <button type="button" class="danger" id="contextDeletePage">🗑 ページを削除</button>
@@ -275,10 +287,14 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080706;color:#fff;fon
   <div class="casaDialogLayer" id="iconEditLayer">
     <div class="casaDialog">
       <h2>アイコン再編集</h2>
-      <p>表示名・絵文字・タップ時に開く画像一覧を変更できます。</p>
+      <p>表示名・絵文字・このアイコンをタップした時に出る画像を編集できます。</p>
       <input id="editIconLabel" type="text" placeholder="アイコン名">
       <input id="editIconEmoji" type="text" placeholder="絵文字">
-      <select id="editIconGallery"></select>
+      <div class="iconGalleryManager">
+        <div class="iconGalleryTop"><b>画像一覧</b><button type="button" class="iconGalleryUpload" id="uploadIconImageBtn">＋ 画像追加</button></div>
+        <div class="iconGalleryGrid" id="iconGalleryThumbs"></div>
+      </div>
+      <input id="iconGalleryFile" type="file" accept="image/*" style="display:none">
       <div class="casaDialogActions">
         <button type="button" id="iconEditCancel">キャンセル</button>
         <button type="button" class="primary" id="iconEditSave">保存</button>
@@ -362,10 +378,12 @@ const passwordSubmit = document.getElementById("passwordSubmit");
 
 const iconContextMenu = document.getElementById("iconContextMenu");
 const contextEdit = document.getElementById("contextEdit");
+const contextCopyIcon = document.getElementById("contextCopyIcon");
 const contextDelete = document.getElementById("contextDelete");
 const editContextMenu = document.getElementById("editContextMenu");
 const contextChangeImage = document.getElementById("contextChangeImage");
 const contextAddIcon = document.getElementById("contextAddIcon");
+const contextPasteIcon = document.getElementById("contextPasteIcon");
 const contextAddPage = document.getElementById("contextAddPage");
 const contextDeletePage = document.getElementById("contextDeletePage");
 const pageImageFile = document.getElementById("pageImageFile");
@@ -373,7 +391,9 @@ const pageImageFile = document.getElementById("pageImageFile");
 const iconEditLayer = document.getElementById("iconEditLayer");
 const editIconLabel = document.getElementById("editIconLabel");
 const editIconEmoji = document.getElementById("editIconEmoji");
-const editIconGallery = document.getElementById("editIconGallery");
+const iconGalleryThumbs = document.getElementById("iconGalleryThumbs");
+const iconGalleryFile = document.getElementById("iconGalleryFile");
+const uploadIconImageBtn = document.getElementById("uploadIconImageBtn");
 const iconEditCancel = document.getElementById("iconEditCancel");
 const iconEditSave = document.getElementById("iconEditSave");
 
@@ -392,6 +412,7 @@ let textEditTarget = null;
 let currentIconSceneIndex = null;
 let currentIconHotspotIndex = null;
 let emptyMenuPoint = {x:50,y:50};
+let copiedIconData = null;
 
 function openPasswordDialog(){
   ownerPasswordInput.value = "";
@@ -466,6 +487,19 @@ contextEdit.onclick = ()=>{
   openIconEditDialog(currentIconSceneIndex,currentIconHotspotIndex);
 };
 
+contextCopyIcon.onclick = ()=>{
+  if(currentIconSceneIndex===null || currentIconHotspotIndex===null) return;
+  const h = scenes[currentIconSceneIndex].spots[currentIconHotspotIndex];
+  const galleryName = getCurrentIconGalleryName() || h.gallery;
+  copiedIconData = {
+    label: h.label || "見る",
+    icon: h.icon || "＋",
+    images: ((galleryName && galleries[galleryName]) ? galleries[galleryName] : []).slice()
+  };
+  closeIconContextMenu();
+  showSaved("アイコンをコピーしました");
+};
+
 contextDelete.onclick = ()=>{
   closeIconContextMenu();
   deleteConfirmLayer.classList.add("open");
@@ -486,26 +520,79 @@ deleteYes.onclick = ()=>{
   refreshOwnerUI();
 };
 
+function makeUniqueIconGallery(sceneIndex,hotspotIndex){
+  const h = scenes[sceneIndex].spots[hotspotIndex];
+  const current = h.gallery || Object.keys(galleries)[0] || "clothes";
+  if(current && current.startsWith("casa_icon_")){
+    if(!galleries[current]) galleries[current]=[];
+    return current;
+  }
+  const unique = "casa_icon_" + sceneIndex + "_" + hotspotIndex + "_" + Date.now();
+  galleries[unique] = (galleries[current] || []).slice();
+  h.gallery = unique;
+  if(!ownerData.galleries) ownerData.galleries={};
+  ownerData.galleries[unique]=galleries[unique];
+  if(!ownerData.scenes) ownerData.scenes={};
+  ownerData.scenes[sceneIndex]={spots:scenes[sceneIndex].spots};
+  saveOwnerData();
+  return unique;
+}
+function getCurrentIconGalleryName(){
+  if(currentIconSceneIndex===null || currentIconHotspotIndex===null) return null;
+  const h = scenes[currentIconSceneIndex].spots[currentIconHotspotIndex];
+  if(!h.gallery || !galleries[h.gallery]) return makeUniqueIconGallery(currentIconSceneIndex,currentIconHotspotIndex);
+  return h.gallery;
+}
+function renderIconGalleryThumbs(){
+  const g = getCurrentIconGalleryName();
+  if(!iconGalleryThumbs || !g) return;
+  const imgs = galleries[g] || [];
+  iconGalleryThumbs.innerHTML = "";
+  if(!imgs.length){
+    const empty=document.createElement("div");
+    empty.className="iconGalleryEmpty";
+    empty.style.gridColumn="1 / -1";
+    empty.textContent="まだ画像がありません。＋画像追加から追加できます。";
+    iconGalleryThumbs.appendChild(empty);
+    return;
+  }
+  imgs.forEach((src,i)=>{
+    const item=document.createElement("div");
+    item.className="iconGalleryItem";
+    const img=document.createElement("img");
+    img.src=src;
+    const del=document.createElement("button");
+    del.type="button";
+    del.textContent="×";
+    del.setAttribute("aria-label","画像削除");
+    del.onclick=(e)=>{
+      e.preventDefault();
+      e.stopPropagation();
+      if(!confirm("この画像を削除しますか？")) return;
+      galleries[g].splice(i,1);
+      if(!ownerData.galleries) ownerData.galleries={};
+      ownerData.galleries[g]=galleries[g];
+      saveOwnerData();
+      renderIconGalleryThumbs();
+      showSaved("画像を削除しました");
+    };
+    item.appendChild(img);
+    item.appendChild(del);
+    iconGalleryThumbs.appendChild(item);
+  });
+}
 function openIconEditDialog(sceneIndex,hotspotIndex){
   currentIconSceneIndex = sceneIndex;
   currentIconHotspotIndex = hotspotIndex;
 
   const h = scenes[sceneIndex].spots[hotspotIndex];
+  makeUniqueIconGallery(sceneIndex,hotspotIndex);
   editIconLabel.value = h.label || "";
   editIconEmoji.value = h.icon || "＋";
-
-  editIconGallery.innerHTML = "";
-  Object.keys(galleries).forEach(g=>{
-    const op = document.createElement("option");
-    op.value = g;
-    op.textContent = g + "（" + (galleries[g] || []).length + "枚）";
-    editIconGallery.appendChild(op);
-  });
-  editIconGallery.value = h.gallery || Object.keys(galleries)[0] || "";
+  renderIconGalleryThumbs();
 
   iconEditLayer.classList.add("open");
 }
-
 function closeIconEditDialog(){
   iconEditLayer.classList.remove("open");
 }
@@ -519,7 +606,6 @@ function saveIconEditLive(){
   const h = scenes[currentIconSceneIndex].spots[currentIconHotspotIndex];
   h.label = editIconLabel.value.trim() || h.label;
   h.icon = editIconEmoji.value.trim() || h.icon;
-  h.gallery = editIconGallery.value || h.gallery;
   if(!ownerData.scenes) ownerData.scenes={};
   ownerData.scenes[currentIconSceneIndex]={spots:scenes[currentIconSceneIndex].spots};
   saveOwnerData();
@@ -532,7 +618,31 @@ function scheduleIconAutoSave(){
 }
 editIconLabel.addEventListener("input",scheduleIconAutoSave);
 editIconEmoji.addEventListener("input",scheduleIconAutoSave);
-editIconGallery.addEventListener("change",()=>{ saveIconEditLive(); render(false); refreshOwnerUI(); });
+uploadIconImageBtn.onclick = ()=>{
+  if(iconGalleryFile) iconGalleryFile.click();
+};
+iconGalleryFile.onchange = async()=>{
+  const file = iconGalleryFile.files[0];
+  if(!file) return;
+  const g = getCurrentIconGalleryName();
+  if(!g) return;
+  try{
+    showSaved("アップロード中…");
+    const url = await uploadImageFile(file);
+    if(!galleries[g]) galleries[g]=[];
+    galleries[g].push(url);
+    if(!ownerData.galleries) ownerData.galleries={};
+    ownerData.galleries[g]=galleries[g];
+    if(!ownerData.scenes) ownerData.scenes={};
+    ownerData.scenes[currentIconSceneIndex]={spots:scenes[currentIconSceneIndex].spots};
+    saveOwnerData();
+    iconGalleryFile.value="";
+    renderIconGalleryThumbs();
+    showSaved("画像を追加しました");
+  }catch(e){
+    alert("画像追加に失敗しました："+e.message);
+  }
+};
 iconEditSave.textContent = "閉じる";
 iconEditSave.onclick = ()=>{
   clearTimeout(iconAutoSaveTimer);
@@ -824,6 +934,30 @@ pageImageFile.onchange=async()=>{
     showSaved("画像を変更しました");
   }catch(e){ alert("画像変更に失敗しました："+e.message); }
 };
+function pasteCopiedIconAtEmptyPoint(){
+  if(!copiedIconData){
+    alert("先にコピーしたいアイコンを長押しして、コピーしてください");
+    return;
+  }
+  const unique = "casa_icon_paste_" + index + "_" + Date.now();
+  galleries[unique] = (copiedIconData.images || []).slice();
+  const newHotspot = {
+    x: emptyMenuPoint.x,
+    y: emptyMenuPoint.y,
+    label: copiedIconData.label || "見る",
+    icon: copiedIconData.icon || "＋",
+    gallery: unique
+  };
+  scenes[index].spots.push(newHotspot);
+  if(!ownerData.galleries) ownerData.galleries={};
+  ownerData.galleries[unique]=galleries[unique];
+  if(!ownerData.scenes) ownerData.scenes={};
+  ownerData.scenes[index]={spots:scenes[index].spots};
+  saveOwnerData();
+  render(false);
+  refreshOwnerUI();
+  showSaved("アイコンを貼り付けました");
+}
 function addIconAtEmptyPoint(){
   const firstGallery = Object.keys(galleries)[0] || "clothes";
   const newHotspot = {
@@ -859,6 +993,7 @@ function bindMenuAction(btn,fn){
   btn.addEventListener("touchend",run,{passive:false});
 }
 bindMenuAction(contextChangeImage,()=>{ closeEditContextMenu(); pageImageFile.click(); });
+bindMenuAction(contextPasteIcon,()=>{ closeEditContextMenu(); pasteCopiedIconAtEmptyPoint(); });
 bindMenuAction(contextAddIcon,()=>{ closeEditContextMenu(); addIconAtEmptyPoint(); });
 bindMenuAction(contextAddPage,()=>{ closeEditContextMenu(); addNewPage(); });
 bindMenuAction(contextDeletePage,()=>{ closeEditContextMenu(); deleteCurrentPage(); });

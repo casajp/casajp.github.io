@@ -215,6 +215,31 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080706;color:#fff;fon
 .iconGalleryItem button{position:absolute;right:5px;top:5px;border:0;border-radius:999px;background:rgba(120,0,0,.82);color:#fff;width:30px;height:30px;font-size:15px;display:grid;place-items:center}
 .iconGalleryEmpty{border:1px dashed rgba(215,180,106,.42);border-radius:14px;padding:18px;text-align:center;color:#d8c8a8;font-size:13px;line-height:1.6}
 
+
+.pageActionBar{position:absolute;left:14px;right:14px;bottom:calc(18px + env(safe-area-inset-bottom));z-index:73;display:none;grid-template-columns:1fr 1fr;gap:8px;pointer-events:auto}
+.pageActionBar.show{display:grid}
+.pageActionBar button{border:1px solid rgba(215,180,106,.52);background:rgba(0,0,0,.72);color:#fff8df;border-radius:999px;padding:12px 10px;font-size:13px;font-weight:700;backdrop-filter:blur(12px);box-shadow:0 12px 45px rgba(0,0,0,.42)}
+.reorderPanel{position:absolute;inset:0;z-index:86;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.62);backdrop-filter:blur(12px)}
+.reorderPanel.open{display:flex}
+.reorderCard{width:min(430px,100%);height:min(86vh,760px);overflow:hidden;background:linear-gradient(180deg,rgba(23,19,13,.98),rgba(5,4,3,.98));border:1px solid rgba(215,180,106,.48);border-radius:24px;padding:16px;color:#fff;box-shadow:0 24px 90px rgba(0,0,0,.72);display:flex;flex-direction:column;position:relative}
+.reorderScrollWrap{position:relative;flex:1;min-height:0;margin:8px 0 12px;padding-right:48px}
+.reorderScrollArea{height:100%;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-right:4px;scrollbar-width:none}
+.reorderScrollArea::-webkit-scrollbar{display:none}
+.reorderScrollRail{position:absolute;right:2px;top:0;bottom:0;width:38px;border-radius:999px;background:rgba(255,255,255,.055);border:1px solid rgba(215,180,106,.24);display:flex;flex-direction:column;align-items:center;padding:5px 4px;gap:5px;touch-action:none;user-select:none}
+.reorderScrollArrow{width:29px;height:29px;border:0;border-radius:50%;background:rgba(215,180,106,.18);color:#fff3cc;font-size:16px;display:grid;place-items:center;padding:0}
+.reorderScrollTrack{position:relative;flex:1;width:10px;border-radius:999px;background:rgba(255,255,255,.10);min-height:70px}
+.reorderScrollThumb{position:absolute;left:50%;top:0;transform:translateX(-50%);width:25px;min-height:44px;border-radius:999px;background:linear-gradient(180deg,rgba(255,244,208,.95),rgba(215,180,106,.92));border:2px solid rgba(60,42,18,.72);box-shadow:0 5px 18px rgba(0,0,0,.55);touch-action:none;transition:width .15s,box-shadow .15s}
+.reorderScrollThumb.dragging{width:31px;box-shadow:0 0 0 4px rgba(215,180,106,.20),0 8px 24px rgba(0,0,0,.65)}
+.reorderHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.reorderHead h2{margin:0;font-size:20px;letter-spacing:.08em;color:#fff7e6}
+.reorderList{display:grid;gap:9px;margin:0;position:relative;padding:2px 0 8px}
+.reorderItem{display:flex;align-items:center;gap:10px;border:1px dashed rgba(215,180,106,.48);background:rgba(255,255,255,.07);border-radius:16px;padding:12px;touch-action:none;user-select:none;transition:transform .18s ease, box-shadow .18s ease, background .18s ease}
+.reorderItem.ready{background:rgba(215,180,106,.18);box-shadow:0 0 0 2px rgba(215,180,106,.32) inset}
+.reorderItem.dragging{opacity:.96;transform:scale(1.03);box-shadow:0 18px 55px rgba(0,0,0,.62);background:rgba(30,24,15,.98);border-style:solid;z-index:120}
+.reorderPlaceholder{border:2px dashed rgba(215,180,106,.85);border-radius:16px;background:rgba(215,180,106,.14);min-height:62px;transition:all .18s ease}
+.reorderGrip{font-size:18px;color:#d7b46a}.reorderTitle{font-size:14px;line-height:1.35;flex:1}.reorderSub{font-size:11px;color:#d8c8a8;margin-top:2px}
+.reorderBtn{width:100%;border-radius:15px;border:1px solid rgba(215,180,106,.38);background:rgba(215,180,106,.26);color:#fff;padding:13px 10px;font-size:15px;font-weight:700}
+.reorderCancel{width:100%;margin-top:8px;border-radius:15px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);color:#fff;padding:13px 10px;font-size:15px}
 @media(min-width:780px){.app{max-width:520px;left:50%;transform:translateX(-50%);box-shadow:0 0 100px #000}body{background:linear-gradient(90deg,#050403,#17110c,#050403)}}
 </style>
 </head>
@@ -231,7 +256,8 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080706;color:#fff;fon
 
   <div class="notice" id="noticeBox"><span class="statusBadge" id="statusBadge">🟢 営業中</span><b id="noticeTitle">お知らせ</b><p id="noticeText"></p></div>
   <button class="hiddenAdminTap" id="hiddenAdminTap" aria-label="owner mode"></button>
-  <button class="backToOwner" id="backToOwnerBtn" style="display:none!important">← 管理画面に戻る</button><div class="editModeBadge" id="editModeBadge">✏ 編集モード</div><div class="editBanner" id="editBanner"><button id="finishEditBtn">編集終了</button></div><div class="saveToast" id="saveToast">保存しました</div>
+  <button class="backToOwner" id="backToOwnerBtn" style="display:none!important">← 管理画面に戻る</button><div class="editModeBadge" id="editModeBadge">✏ 編集モード</div><div class="editBanner" id="editBanner"><button id="finishEditBtn">編集終了</button></div><div class="saveToast" id="saveToast">保存しました</div><div class="pageActionBar" id="pageActionBar"><button id="undoBtn" type="button">↩ 元に戻す</button><button id="pageReorderBtn" type="button">↕ ページ並び替え</button></div>
+  <section class="reorderPanel" id="reorderPanel"><div class="reorderCard"><div class="reorderHead"><h2>ページ並び替え</h2></div><p class="ownerSmall">ページを長押しして上下へ移動できます。右のスライダーでもスクロールできます。</p><div class="reorderScrollWrap"><div class="reorderScrollArea" id="reorderScrollArea"><div class="reorderList" id="reorderList"></div></div><div class="reorderScrollRail" id="reorderScrollRail"><button class="reorderScrollArrow" id="reorderScrollUp" type="button">▲</button><div class="reorderScrollTrack" id="reorderScrollTrack"><div class="reorderScrollThumb" id="reorderScrollThumb"></div></div><button class="reorderScrollArrow" id="reorderScrollDown" type="button">▼</button></div></div><button class="reorderBtn" id="finishReorderBtn" type="button">並び替え終了</button><button class="reorderCancel" id="cancelReorderBtn" type="button">キャンセル</button></div></section>
   <section class="sharePanel" id="sharePanel"><div class="shareCard"><div class="panelHead"><h2>CASAを共有</h2><button class="panelClose" id="shareClose">×</button></div><p class="ownerSmall">QRコードを見せる、URLをコピーする、スマホの共有機能で送ることができます。</p><div class="qrBox"><img id="qrImage" src="assets/qr-casa.png"  alt="CASA QR code"></div><div class="shareActions"><button id="copyUrlBtn">URLコピー</button><button id="nativeShareBtn">共有する</button><a id="lineShare" target="_blank" rel="noopener">LINE</a><a id="xShare" target="_blank" rel="noopener">X</a></div></div></section>
   <section class="ownerPanel" id="ownerPanel"><div class="ownerCard"><div class="panelHead"><h2>CASA 管理</h2><button class="panelClose" id="ownerClose">×</button></div>
     <div class="ownerTabs"><button class="ownerTabBtn active" data-tab="noticeTab">お知らせ</button><button class="ownerTabBtn" data-tab="pageTab">ページ</button><button class="ownerTabBtn" data-tab="photoTab">写真</button><button class="ownerTabBtn" data-tab="iconTab">アイコン</button><button class="ownerTabBtn" data-tab="shareTab">共有</button></div>
@@ -793,6 +819,7 @@ const qrImage = document.getElementById("qrImage"), copyUrlBtn = document.getEle
 const lineShare = document.getElementById("lineShare"), xShare = document.getElementById("xShare"), ownerPanel = document.getElementById("ownerPanel"), ownerClose = document.getElementById("ownerClose");
 const hiddenAdminTap = document.getElementById("hiddenAdminTap"), noticeBox = document.getElementById("noticeBox"), statusBadge = document.getElementById("statusBadge"), noticeTitle = document.getElementById("noticeTitle"), noticeText = document.getElementById("noticeText");
 const editBanner = document.getElementById("editBanner"), finishEditBtn = document.getElementById("finishEditBtn"), backToOwnerBtn = document.getElementById("backToOwnerBtn"), editModeBadge = document.getElementById("editModeBadge"), saveToast = document.getElementById("saveToast");
+const pageActionBar = document.getElementById("pageActionBar"), pageReorderBtn = document.getElementById("pageReorderBtn"), undoBtn = document.getElementById("undoBtn"), reorderPanel = document.getElementById("reorderPanel"), reorderList = document.getElementById("reorderList"), finishReorderBtn = document.getElementById("finishReorderBtn"), cancelReorderBtn = document.getElementById("cancelReorderBtn"), reorderScrollArea = document.getElementById("reorderScrollArea"), reorderScrollTrack = document.getElementById("reorderScrollTrack"), reorderScrollThumb = document.getElementById("reorderScrollThumb"), reorderScrollUp = document.getElementById("reorderScrollUp"), reorderScrollDown = document.getElementById("reorderScrollDown");
 let ownerData = JSON.parse(localStorage.getItem("casaOwnerDataV3") || "{}");
 const defaultBusinessInfo = {phone:"099-259-8005", hours:"11:00〜19:00", closed:"火曜日"};
 function getBusinessInfo(){ return Object.assign({}, defaultBusinessInfo, ownerData.businessInfo || {}); }
@@ -811,6 +838,7 @@ function startDirectEditMode(){
   editMode = true;
   editBanner.classList.add("show");
   editModeBadge.classList.add("show");
+  if(pageActionBar) pageActionBar.classList.add("show");
   backToOwnerBtn.classList.remove("show");
   backToOwnerBtn.style.display = "none";
   closeAllContextMenus();
@@ -820,8 +848,22 @@ qrImage.src = "assets/qr-casa.png";
 lineShare.href = "https://social-plugins.line.me/lineit/share?url=" + encodeURIComponent(SITE_URL);
 xShare.href = "https://twitter.com/intent/tweet?text=" + encodeURIComponent("CASA") + "&url=" + encodeURIComponent(SITE_URL);
 
-function saveOwnerData(){ localStorage.setItem("casaOwnerDataV3", JSON.stringify(ownerData)); }
+function scenesSnapshot(){ return scenes.map(p=>({img:p.img,title:p.title,desc:p.desc,enter:!!p.enter,showContact:!!p.showContact,spots:JSON.parse(JSON.stringify(p.spots||[]))})); }
+function persistAllScenes(){ ownerData.fullScenes = scenesSnapshot(); }
+let undoStack = JSON.parse(sessionStorage.getItem("casaUndoStackV1") || "[]");
+function saveUndoStack(){ sessionStorage.setItem("casaUndoStackV1", JSON.stringify(undoStack.slice(-12))); }
+function pushUndoFromStorage(){
+  const current = localStorage.getItem("casaOwnerDataV3") || "{}";
+  const latest = undoStack[undoStack.length-1];
+  if(current && current !== latest){ undoStack.push(current); undoStack = undoStack.slice(-12); saveUndoStack(); }
+}
+function saveOwnerData(){ pushUndoFromStorage(); persistAllScenes(); localStorage.setItem("casaOwnerDataV3", JSON.stringify(ownerData)); }
 function mergeOwnerData(){
+  if(ownerData.fullScenes && ownerData.fullScenes.length){
+    scenes.splice(0, scenes.length, ...ownerData.fullScenes.map(p=>({img:p.img,title:p.title,desc:p.desc,enter:!!p.enter,showContact:!!p.showContact,spots:p.spots||[]})));
+    const cg0 = ownerData.galleries || {}; Object.keys(cg0).forEach(k=>{ galleries[k]=cg0[k]; });
+    return;
+  }
   const cs = ownerData.scenes || {};
   Object.keys(cs).forEach(k=>{ const i=Number(k); if(scenes[i] && cs[k].spots) scenes[i].spots=cs[k].spots; });
   const cg = ownerData.galleries || {};
@@ -1031,13 +1073,223 @@ bindMenuAction(contextAddIcon,()=>{ closeEditContextMenu(); addIconAtEmptyPoint(
 bindMenuAction(contextAddPage,()=>{ closeEditContextMenu(); addNewPage(); });
 bindMenuAction(contextDeletePage,()=>{ closeEditContextMenu(); deleteCurrentPage(); });
 
+function undoLastChange(){
+  if(!undoStack.length){ showSaved("戻せる変更がありません"); return; }
+  const prev = undoStack.pop();
+  saveUndoStack();
+  localStorage.setItem("casaOwnerDataV3", prev);
+  showSaved("1つ前に戻しました");
+  setTimeout(()=>location.reload(),420);
+}
+if(undoBtn) undoBtn.onclick = undoLastChange;
+
+let reorderOriginalOrder = null;
+let reorderOrder = [];
+let reorderAutoScrollRaf = null;
+let reorderDragPointerY = null;
+function updateReorderScrollThumb(){
+  if(!reorderScrollArea || !reorderScrollTrack || !reorderScrollThumb) return;
+  const maxScroll = Math.max(0, reorderScrollArea.scrollHeight - reorderScrollArea.clientHeight);
+  const trackH = reorderScrollTrack.clientHeight;
+  const ratio = reorderScrollArea.scrollHeight ? reorderScrollArea.clientHeight / reorderScrollArea.scrollHeight : 1;
+  const thumbH = Math.max(44, Math.min(trackH, trackH * ratio));
+  const travel = Math.max(0, trackH - thumbH);
+  const top = maxScroll ? (reorderScrollArea.scrollTop / maxScroll) * travel : 0;
+  reorderScrollThumb.style.height = thumbH + "px";
+  reorderScrollThumb.style.top = top + "px";
+  reorderScrollThumb.style.opacity = maxScroll > 1 ? "1" : ".35";
+}
+function scrollReorderBy(amount){
+  if(!reorderScrollArea) return;
+  reorderScrollArea.scrollBy({top:amount,behavior:"smooth"});
+}
+function setupReorderScrollHandle(){
+  if(!reorderScrollArea || reorderScrollArea.dataset.scrollReady) return;
+  reorderScrollArea.dataset.scrollReady = "1";
+  reorderScrollArea.addEventListener("scroll",updateReorderScrollThumb,{passive:true});
+  reorderScrollUp.addEventListener("click",()=>scrollReorderBy(-Math.max(120,reorderScrollArea.clientHeight*.55)));
+  reorderScrollDown.addEventListener("click",()=>scrollReorderBy(Math.max(120,reorderScrollArea.clientHeight*.55)));
+  let draggingThumb=false, startY=0, startScroll=0;
+  const begin=(clientY,e)=>{
+    if(e){e.preventDefault();e.stopPropagation();}
+    draggingThumb=true; startY=clientY; startScroll=reorderScrollArea.scrollTop;
+    reorderScrollThumb.classList.add("dragging");
+  };
+  const move=(clientY,e)=>{
+    if(!draggingThumb) return;
+    if(e){e.preventDefault();e.stopPropagation();}
+    const maxScroll=Math.max(0,reorderScrollArea.scrollHeight-reorderScrollArea.clientHeight);
+    const travel=Math.max(1,reorderScrollTrack.clientHeight-reorderScrollThumb.offsetHeight);
+    reorderScrollArea.scrollTop=startScroll+(clientY-startY)*(maxScroll/travel);
+  };
+  const end=()=>{draggingThumb=false;reorderScrollThumb.classList.remove("dragging");};
+  reorderScrollThumb.addEventListener("touchstart",e=>begin(e.touches[0].clientY,e),{passive:false});
+  window.addEventListener("touchmove",e=>{if(draggingThumb) move(e.touches[0].clientY,e);},{passive:false});
+  window.addEventListener("touchend",end,{passive:true});
+  reorderScrollThumb.addEventListener("mousedown",e=>begin(e.clientY,e));
+  window.addEventListener("mousemove",e=>move(e.clientY,e));
+  window.addEventListener("mouseup",end);
+  reorderScrollTrack.addEventListener("click",e=>{
+    if(e.target===reorderScrollThumb) return;
+    const r=reorderScrollTrack.getBoundingClientRect();
+    const ratio=Math.max(0,Math.min(1,(e.clientY-r.top)/r.height));
+    reorderScrollArea.scrollTop=ratio*Math.max(0,reorderScrollArea.scrollHeight-reorderScrollArea.clientHeight);
+  });
+}
+function runReorderAutoScroll(){
+  cancelAnimationFrame(reorderAutoScrollRaf);
+  const step=()=>{
+    if(reorderDragPointerY===null || !reorderScrollArea){ reorderAutoScrollRaf=null; return; }
+    const r=reorderScrollArea.getBoundingClientRect();
+    const edge=Math.min(95,r.height*.22);
+    let speed=0;
+    if(reorderDragPointerY < r.top+edge){ const p=(r.top+edge-reorderDragPointerY)/edge; speed=-Math.min(18,2+18*p*p); }
+    else if(reorderDragPointerY > r.bottom-edge){ const p=(reorderDragPointerY-(r.bottom-edge))/edge; speed=Math.min(18,2+18*p*p); }
+    if(speed) reorderScrollArea.scrollTop += speed;
+    reorderAutoScrollRaf=requestAnimationFrame(step);
+  };
+  reorderAutoScrollRaf=requestAnimationFrame(step);
+}
+function openPageReorderMode(){
+  if(!editMode) return;
+  closeAllContextMenus();
+  reorderOriginalOrder = scenesSnapshot();
+  reorderOrder = scenes.map((_,i)=>i);
+  renderReorderList();
+  reorderPanel.classList.add("open");
+  setupReorderScrollHandle();
+  reorderScrollArea.scrollTop = 0;
+  requestAnimationFrame(updateReorderScrollThumb);
+}
+function renderReorderList(){
+  reorderList.innerHTML = "";
+  reorderOrder.forEach((sceneIndex,pos)=>{
+    const s = scenes[sceneIndex];
+    const item = document.createElement("div");
+    item.className = "reorderItem";
+    item.dataset.sceneIndex = sceneIndex;
+    item.innerHTML = `<div class="reorderGrip">☰</div><div class="reorderTitle">${pos+1}. ${s.title||"無題ページ"}<div class="reorderSub">長押しすると浮き上がります。そのまま上下へ移動</div></div>`;
+    attachReorderDrag(item);
+    reorderList.appendChild(item);
+  });
+  requestAnimationFrame(updateReorderScrollThumb);
+}
+function syncReorderOrderFromDom(){
+  reorderOrder = [...reorderList.querySelectorAll(".reorderItem")].map(el=>Number(el.dataset.sceneIndex));
+}
+function getReorderInsertBefore(clientY, placeholder){
+  const items=[...reorderList.querySelectorAll(".reorderItem:not(.dragging)")];
+  let closest={offset:Number.NEGATIVE_INFINITY, element:null};
+  items.forEach(child=>{
+    const box=child.getBoundingClientRect();
+    const offset=clientY - box.top - box.height/2;
+    if(offset < 0 && offset > closest.offset){
+      closest={offset, element:child};
+    }
+  });
+  return closest.element;
+}
+function attachReorderDrag(item){
+  let timer=null, dragging=false, startY=0, grabOffsetY=0, placeholder=null, originalIndex=0;
+  const beginDrag=(clientY)=>{
+    if(dragging) return;
+    dragging=true;
+    item.classList.remove("ready");
+    originalIndex=[...reorderList.children].indexOf(item);
+    const rect=item.getBoundingClientRect();
+    grabOffsetY=clientY-rect.top;
+    placeholder=document.createElement("div");
+    placeholder.className="reorderPlaceholder";
+    placeholder.style.height=rect.height+"px";
+    item.parentNode.insertBefore(placeholder,item.nextSibling);
+    item.classList.add("dragging");
+    item.style.position="fixed";
+    item.style.left=rect.left+"px";
+    item.style.top=rect.top+"px";
+    item.style.width=rect.width+"px";
+    item.style.margin="0";
+    item.style.pointerEvents="none";
+    document.body.appendChild(item);
+    moveDrag(clientY);
+  };
+  const start=(clientY)=>{
+    startY=clientY;
+    clearTimeout(timer);
+    timer=setTimeout(()=>beginDrag(clientY),430);
+  };
+  const moveDrag=(clientY)=>{
+    if(!dragging) return;
+    reorderDragPointerY=clientY;
+    if(!reorderAutoScrollRaf) runReorderAutoScroll();
+    item.style.top=(clientY-grabOffsetY)+"px";
+    const before=getReorderInsertBefore(clientY, placeholder);
+    if(before){
+      if(before!==placeholder.nextSibling) reorderList.insertBefore(placeholder,before);
+    }else{
+      if(reorderList.lastElementChild!==placeholder) reorderList.appendChild(placeholder);
+    }
+  };
+  const cancelPress=()=>{ clearTimeout(timer); timer=null; item.classList.remove("ready"); };
+  const end=()=>{
+    clearTimeout(timer);
+    item.classList.remove("ready");
+    if(!dragging) return;
+    dragging=false;
+    reorderDragPointerY=null;
+    if(reorderAutoScrollRaf){ cancelAnimationFrame(reorderAutoScrollRaf); reorderAutoScrollRaf=null; }
+    if(placeholder && placeholder.parentNode){ placeholder.parentNode.insertBefore(item,placeholder); placeholder.remove(); }
+    item.classList.remove("dragging");
+    item.removeAttribute("style");
+    syncReorderOrderFromDom();
+    [...reorderList.querySelectorAll(".reorderItem")].forEach((el,pos)=>{
+      const sceneIndex=Number(el.dataset.sceneIndex), s=scenes[sceneIndex];
+      const titleEl=el.querySelector(".reorderTitle");
+      if(titleEl) titleEl.innerHTML=`${pos+1}. ${s.title||"無題ページ"}<div class="reorderSub">長押しすると浮き上がります。そのまま上下へ移動</div>`;
+    });
+    updateReorderScrollThumb();
+  };
+  item.addEventListener("touchstart",e=>{ item.classList.add("ready"); start(e.touches[0].clientY); },{passive:true});
+  item.addEventListener("touchmove",e=>{
+    const y=e.touches[0].clientY;
+    if(!dragging && Math.abs(y-startY)>12){ cancelPress(); return; }
+    if(dragging){ e.preventDefault(); moveDrag(y); }
+  },{passive:false});
+  item.addEventListener("touchend",e=>{ if(dragging){ e.preventDefault(); } end(); },{passive:false});
+  item.addEventListener("touchcancel",end,{passive:false});
+  item.addEventListener("mousedown",e=>{ item.classList.add("ready"); start(e.clientY); });
+  window.addEventListener("mousemove",e=>{ if(!dragging && Math.abs(e.clientY-startY)>12) cancelPress(); if(dragging) moveDrag(e.clientY); });
+  window.addEventListener("mouseup",end);
+}
+function finishPageReorder(){
+  syncReorderOrderFromDom();
+  const oldIndex=index;
+  const reordered = reorderOrder.map(i=>scenes[i]);
+  const newIndex = Math.max(0,reorderOrder.indexOf(oldIndex));
+  scenes.splice(0,scenes.length,...reordered);
+  index = newIndex;
+  persistAllScenes();
+  saveOwnerData();
+  reorderPanel.classList.remove("open");
+  render(false);
+  refreshOwnerUI();
+  showSaved("並び替えを保存しました");
+}
+function cancelPageReorder(){
+  if(reorderOriginalOrder){ scenes.splice(0, scenes.length, ...reorderOriginalOrder); }
+  reorderPanel.classList.remove("open");
+  render(false);
+}
+if(pageReorderBtn) pageReorderBtn.onclick=openPageReorderMode;
+if(finishReorderBtn) finishReorderBtn.onclick=finishPageReorder;
+if(cancelReorderBtn) cancelReorderBtn.onclick=cancelPageReorder;
+
 document.getElementById("startIconEditBtn").onclick=()=>{ index=Number(document.getElementById("sceneSelectForIcon").value||index); startDirectEditMode(); };
-finishEditBtn.onclick=()=>{ editMode=false; closeAllContextMenus(); editBanner.classList.remove("show"); editModeBadge.classList.remove("show"); backToOwnerBtn.classList.remove("show"); render(false); };
+finishEditBtn.onclick=()=>{ editMode=false; closeAllContextMenus(); if(reorderPanel) reorderPanel.classList.remove("open"); editBanner.classList.remove("show"); editModeBadge.classList.remove("show"); if(pageActionBar) pageActionBar.classList.remove("show"); backToOwnerBtn.classList.remove("show"); render(false); };
 backToOwnerBtn.onclick=()=>{};
 
 let emptyPressTimer=null, emptyLongPressed=false;
 function isIgnoredForEmptyMenu(target){
-  return target.closest(".hotspot")||target.closest(".top")||target.closest(".info")||target.closest(".editBanner")||target.closest("#iconContextMenu")||target.closest("#editContextMenu")||target.closest(".casaDialogLayer")||target.closest("#backToOwnerBtn")||target.closest(".modal")||target.closest(".notice");
+  return target.closest(".hotspot")||target.closest(".top")||target.closest(".info")||target.closest(".editBanner")||target.closest(".pageActionBar")||target.closest("#reorderPanel")||target.closest("#iconContextMenu")||target.closest("#editContextMenu")||target.closest(".casaDialogLayer")||target.closest("#backToOwnerBtn")||target.closest(".modal")||target.closest(".notice");
 }
 app.addEventListener("touchstart",e=>{
   clearTimeout(emptyPressTimer);
@@ -1070,7 +1322,7 @@ app.addEventListener("mousedown",e=>{
 app.addEventListener("mouseup",()=>clearTimeout(emptyPressTimer));
 app.addEventListener("mouseleave",()=>clearTimeout(emptyPressTimer));
 
-render = function(animate=true){ const s=scenes[index]; if(animate)scene.classList.add("moving"); setTimeout(()=>{ scene.style.backgroundImage=`url("${s.img}")`; title.textContent=s.title; desc.textContent=s.desc; enter.style.display=s.enter?"block":"none"; contact.classList.toggle("show",!!s.showContact); contact.classList.remove("hide"); info.classList.remove("hide"); info.classList.toggle("editingText", !!editMode); applyBusinessInfo(); hotspots.innerHTML=""; s.spots.forEach((h,hi)=>{ const b=document.createElement("button"); b.className="hotspot"+(editMode?" editing":""); b.style.left=h.x+"%"; b.style.top=h.y+"%"; b.innerHTML=`${h.icon}<span>${h.label}</span>`; if(editMode){
+render = function(animate=true){ const s=scenes[index]; if(animate)scene.classList.add("moving"); setTimeout(()=>{ scene.style.backgroundImage=`url("${s.img}")`; title.textContent=s.title; desc.textContent=s.desc; enter.style.display=s.enter?"block":"none"; contact.classList.toggle("show",!!s.showContact); contact.classList.remove("hide"); info.classList.remove("hide"); info.classList.toggle("editingText", !!editMode); if(businessInfo){ businessInfo.style.display = (index===0 ? "grid" : "none"); } applyBusinessInfo(); hotspots.innerHTML=""; s.spots.forEach((h,hi)=>{ const b=document.createElement("button"); b.className="hotspot"+(editMode?" editing":""); b.style.left=h.x+"%"; b.style.top=h.y+"%"; b.innerHTML=`${h.icon}<span>${h.label}</span>`; if(editMode){
         let pressTimer=null;
         let longPressed=false;
 

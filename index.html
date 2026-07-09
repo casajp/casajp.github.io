@@ -240,7 +240,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080706;color:#fff;fon
       <p class="ownerSmall">※最初の外観ページは削除できません。</p>
     </div>
 
-    <div class="ownerTab" id="photoTab"><label class="ownerLabel">追加先グループ</label><select class="ownerSelect" id="uploadGroupSelect"></select><label class="ownerLabel">写真を追加</label><input class="ownerFile" id="cloudinaryFile" type="file" accept="image/*"><button class="ownerSave" id="uploadPhotoBtn">Cloudinaryへアップロード</button><p class="ownerSmall">Cloud Name: q261jbxw / Preset: casa_unsigned / Folder: casa</p><div class="thumbRow" id="groupThumbs"></div><label class="ownerLabel">新しい写真グループを作成</label><input class="ownerInput" id="newGroupName" placeholder="例：夏のおすすめ"><button class="ownerSave" id="addGroupBtn">グループ追加</button><div class="ownerList" id="groupList"></div></div>
+    <div class="ownerTab" id="photoTab"><label class="ownerLabel">追加先グループ</label><select class="ownerSelect" id="uploadGroupSelect"></select><label class="ownerLabel">写真を追加</label><input class="ownerFile" id="cloudinaryFile" type="file" accept="image/*"><button class="ownerSave" id="uploadPhotoBtn">Cloudinaryへアップロード</button><p class="ownerSmall">Cloud Name: q26ljbxw / Preset: casa_unsigned / Folder: casa</p><div class="thumbRow" id="groupThumbs"></div><label class="ownerLabel">新しい写真グループを作成</label><input class="ownerInput" id="newGroupName" placeholder="例：夏のおすすめ"><button class="ownerSave" id="addGroupBtn">グループ追加</button><div class="ownerList" id="groupList"></div></div>
     <div class="ownerTab active" id="iconTab"><p class="ownerSmall">管理画面はアイコン編集だけ表示しています。<br>「編集開始」を押すと、店内写真上の丸アイコンを移動できます。アイコンを長押しすると、再編集・削除を選べます。空いている場所を長押しすると、画像変更・アイコン追加・ページ追加・ページ削除を選べます。</p><button class="ownerSave" id="startIconEditBtn">編集開始</button><label class="ownerLabel">現在のページ</label><select class="ownerSelect" id="sceneSelectForIcon"></select><div class="ownerList" id="hotspotList"></div></div>
     <div class="ownerTab" id="shareTab"><button class="ownerSave" id="ownerOpenShare">QR共有画面を開く</button><p class="ownerSmall">右上の🔗からも同じ共有画面を開けます。</p></div>
     <p class="ownerSmall">店主モード：左上を10回タップ / パスワード：Yuika</p>
@@ -642,8 +642,9 @@ app.addEventListener("click",e=>{
 
 
 /* ===== CASA 店主モード / 共有 / お知らせ / 編集機能 JS ===== */
-const CLOUD_NAME = "q261jbxw";
+const CLOUD_NAME = "q26ljbxw";
 const UPLOAD_PRESET = "casa_unsigned";
+// Unsigned Upload用。API Keyは使いません。Cloudinary側でこのPresetをUnsignedにしてください。
 const CLOUD_FOLDER = "casa";
 const OWNER_PASSWORD = "Yuika";
 const SITE_URL = "https://casajp.github.io/";
@@ -729,7 +730,7 @@ function renderGroupList(){ const list=document.getElementById("groupList"); lis
 function renderThumbs(){ const group=document.getElementById("uploadGroupSelect").value || Object.keys(galleries)[0]; const row=document.getElementById("groupThumbs"); row.innerHTML=""; (galleries[group]||[]).forEach(src=>{ const img=document.createElement("img"); img.src=src; row.appendChild(img); }); }
 document.getElementById("uploadGroupSelect").onchange=renderThumbs;
 document.getElementById("addGroupBtn").onclick=()=>{ const name=document.getElementById("newGroupName").value.trim(); if(!name)return alert("グループ名を入力してください"); if(!ownerData.galleries) ownerData.galleries={}; if(!galleries[name]) galleries[name]=[]; ownerData.galleries[name]=galleries[name]; saveOwnerData(); document.getElementById("newGroupName").value=""; refreshOwnerUI(); };
-document.getElementById("uploadPhotoBtn").onclick=async()=>{ const file=document.getElementById("cloudinaryFile").files[0]; const group=document.getElementById("uploadGroupSelect").value; if(!file)return alert("写真を選択してください"); const fd=new FormData(); fd.append("file",file); fd.append("upload_preset",UPLOAD_PRESET); fd.append("folder",CLOUD_FOLDER); try{ const res=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:"POST",body:fd}); const data=await res.json(); if(!data.secure_url) throw new Error(data.error?.message||"upload error"); if(!galleries[group]) galleries[group]=[]; galleries[group].push(data.secure_url); if(!ownerData.galleries) ownerData.galleries={}; ownerData.galleries[group]=galleries[group]; saveOwnerData(); refreshOwnerUI(); alert("写真を追加しました"); }catch(e){ alert("アップロードに失敗しました："+e.message); } };
+document.getElementById("uploadPhotoBtn").onclick=async()=>{ const file=document.getElementById("cloudinaryFile").files[0]; const group=document.getElementById("uploadGroupSelect").value; if(!file)return alert("写真を選択してください"); const fd=new FormData(); fd.append("file",file); fd.append("upload_preset",UPLOAD_PRESET); try{ const res=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:"POST",body:fd}); const data=await res.json(); if(!res.ok || !data.secure_url) throw new Error(data.error?.message || data.message || ("Cloudinary upload error " + res.status)); if(!galleries[group]) galleries[group]=[]; galleries[group].push(data.secure_url); if(!ownerData.galleries) ownerData.galleries={}; ownerData.galleries[group]=galleries[group]; saveOwnerData(); refreshOwnerUI(); alert("写真を追加しました"); }catch(e){ alert("アップロードに失敗しました："+e.message); } };
 
 function renderHotspotList(){ const i=Number(document.getElementById("sceneSelectForIcon").value||index); const list=document.getElementById("hotspotList"); list.innerHTML=""; (scenes[i].spots||[]).forEach((h,hi)=>{ const item=document.createElement("div"); item.className="ownerItem"; item.innerHTML=`<span>${h.icon||"＋"} ${h.label||"アイコン"} / ${h.gallery||""}</span><button>編集</button>`; item.querySelector("button").onclick=()=>editHotspot(i,hi); list.appendChild(item); }); }
 document.getElementById("sceneSelectForIcon").onchange=renderHotspotList;
@@ -803,10 +804,10 @@ async function uploadImageFile(file){
   const fd=new FormData();
   fd.append("file",file);
   fd.append("upload_preset",UPLOAD_PRESET);
-  fd.append("folder",CLOUD_FOLDER);
+ 
   const res=await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,{method:"POST",body:fd});
   const data=await res.json();
-  if(!data.secure_url) throw new Error(data.error?.message||"upload error");
+  if(!res.ok || !data.secure_url) throw new Error(data.error?.message || data.message || ("Cloudinary upload error " + res.status));
   return data.secure_url;
 }
 pageImageFile.onchange=async()=>{

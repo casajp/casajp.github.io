@@ -36,10 +36,13 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080706;color:#fff;fon
 .sound,.topIcon{width:40px;height:40px;border-radius:999px;border:1px solid rgba(255,255,255,.13);color:#fff;background:rgba(0,0,0,.48);display:grid;place-items:center;text-decoration:none;font-size:18px}.topIcon{border-color:rgba(215,180,106,.45)}
 .info{position:absolute;left:16px;right:16px;bottom:calc(62px + env(safe-area-inset-bottom));z-index:7;background:rgba(0,0,0,.46);backdrop-filter:blur(13px);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:13px 15px;transition:opacity .25s}
 .info.hide{opacity:0}.info h1{margin:0 0 4px;font-size:18px;letter-spacing:.08em}.info p{margin:0;font-size:12px;color:#e9ddc4;line-height:1.55}
+.businessInfo{display:grid;grid-template-columns:1fr;gap:4px;margin-top:10px;padding-top:9px;border-top:1px solid rgba(215,180,106,.28);font-size:12px;color:#fff3cc;line-height:1.45}
+.businessInfo div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .info.editingText{outline:2px dashed rgba(255,255,255,.82);outline-offset:4px}
-.info.editingText h1,.info.editingText p{border:1px dashed rgba(215,180,106,.55);border-radius:12px;padding:8px;cursor:pointer}
+.info.editingText h1,.info.editingText p,.info.editingText .businessInfo div{border:1px dashed rgba(215,180,106,.55);border-radius:12px;padding:8px;cursor:pointer}
 .info.editingText h1{margin-bottom:8px}
 .info.editingText p{min-height:38px}
+.info.editingText .businessInfo{gap:7px}
 .casaDialog textarea{
   width:100%;
   min-height:120px;
@@ -222,7 +225,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080706;color:#fff;fon
   <button class="enter" id="enter">🚪 扉をひらく</button>
   <div class="contact" id="contact"><a id="mapLink" target="_blank" rel="noopener">MAP</a><a id="telLink">TEL</a></div>
   <div id="hotspots"></div><div class="arrows"><div class="arrow">‹</div><div class="arrow">›</div></div>
-  <section class="info" id="info"><h1 id="title"></h1><p id="desc"></p></section><div class="dots" id="dots"></div>
+  <section class="info" id="info"><h1 id="title"></h1><p id="desc"></p><div class="businessInfo" id="businessInfo"><div id="businessPhone">📞 099-259-8005</div><div id="businessHours">🕒 11:00〜19:00</div><div id="businessClosed">📅 火曜定休</div></div></section><div class="dots" id="dots"></div>
   <section class="modal" id="modal"><button class="close" id="close">×</button><img id="modalImg" alt=""><div class="modalHint" id="modalHint">商品写真も左右スワイプできます</div></section>
   <audio id="bellAudio" src="audio/bell.mp3" preload="auto"></audio><audio id="tapAudio" src="audio/tap.mp3" preload="auto"></audio><audio id="swipeAudio" src="audio/swipe.mp3" preload="auto"></audio>
 
@@ -331,7 +334,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080706;color:#fff;fon
 <script>
 const A="assets/";
 const SHOP_ADDRESS="鹿児島県鹿児島市上之園町22-15 甲南パークマンション102 カーサ";
-const TEMP_PHONE="099-000-0000";
+const TEMP_PHONE="099-259-8005";
 const scenes=[
  {img:A+"exterior.jpg",title:"📢 お知らせ",desc:"現在お知らせはありません。",enter:true,showContact:true,spots:[]},
  {img:A+"first.jpg",title:"入ってすぐ",desc:"入口すぐのコーディネート。光る丸をタップすると写真が開きます。",spots:[{x:56,y:42,label:"コーデ",gallery:"clothes",icon:"👗"},{x:22,y:46,label:"バッグ",gallery:"bags",icon:"👜"}]},
@@ -343,6 +346,7 @@ const scenes=[
 const galleries={clothes:[A+"white_coord.jpg",A+"green_coord1.jpg",A+"green_coord2.jpg",A+"lace_coord.jpg",A+"white_dress.jpg",A+"orange_coord.jpg",A+"first.jpg"],bags:[A+"first.jpg",A+"green_coord1.jpg"],pouches:[A+"pouch1.jpg",A+"pouch2.jpg",A+"pouch3.jpg",A+"pouch4.jpg"],sofa:[A+"sofa.jpg"],treasure:[A+"treasure.jpg",A+"sofa.jpg"]};
 let index=0,modalGallery=[],modalIndex=0,soundOn=true,busy=false;
 const scene=document.getElementById("scene"),fade=document.getElementById("fade"),doorFlash=document.getElementById("doorFlash"),doorPanel=document.getElementById("doorPanel"),title=document.getElementById("title"),desc=document.getElementById("desc"),enter=document.getElementById("enter"),hotspots=document.getElementById("hotspots"),dots=document.getElementById("dots"),app=document.getElementById("app"),modal=document.getElementById("modal"),modalImg=document.getElementById("modalImg"),contact=document.getElementById("contact"),soundBtn=document.getElementById("soundBtn"),info=document.getElementById("info");
+const businessPhone=document.getElementById("businessPhone"),businessHours=document.getElementById("businessHours"),businessClosed=document.getElementById("businessClosed");
 const bell=document.getElementById("bellAudio"),tap=document.getElementById("tapAudio"),swipe=document.getElementById("swipeAudio");
 const mapUrl="https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(SHOP_ADDRESS);
 const telUrl="tel:"+TEMP_PHONE.replaceAll("-","");
@@ -655,18 +659,34 @@ iconEditSave.onclick = ()=>{
 function openTextEditDialog(target){
   if(!editMode) return;
   textEditTarget = target;
-  textEditInput.style.display = target === "title" ? "block" : "none";
+  const singleTargets = ["title","phone","hours","closed"];
+  textEditInput.style.display = singleTargets.includes(target) ? "block" : "none";
   textEditTextarea.style.display = target === "desc" ? "block" : "none";
   if(target === "title"){
     textEditHeading.textContent = "ページタイトル編集";
     textEditHelp.textContent = "下の枠のタイトル部分だけを変更します。";
     textEditInput.value = scenes[index].title || "";
     setTimeout(()=>textEditInput.focus(),80);
-  }else{
+  }else if(target === "desc"){
     textEditHeading.textContent = "説明文編集";
     textEditHelp.textContent = "下の枠の説明文部分だけを変更します。";
     textEditTextarea.value = scenes[index].desc || "";
     setTimeout(()=>textEditTextarea.focus(),80);
+  }else if(target === "phone"){
+    textEditHeading.textContent = "電話番号編集";
+    textEditHelp.textContent = "電話番号を変更します。電話アイコンの発信先にも反映されます。";
+    textEditInput.value = getBusinessInfo().phone || "";
+    setTimeout(()=>textEditInput.focus(),80);
+  }else if(target === "hours"){
+    textEditHeading.textContent = "営業時間編集";
+    textEditHelp.textContent = "営業時間を変更します。";
+    textEditInput.value = getBusinessInfo().hours || "";
+    setTimeout(()=>textEditInput.focus(),80);
+  }else if(target === "closed"){
+    textEditHeading.textContent = "定休日編集";
+    textEditHelp.textContent = "定休日を変更します。例：火曜日";
+    textEditInput.value = getBusinessInfo().closed || "";
+    setTimeout(()=>textEditInput.focus(),80);
   }
   textEditLayer.classList.add("open");
 }
@@ -686,6 +706,13 @@ function saveTextEditLive(){
   }else if(textEditTarget === "desc"){
     scenes[index].desc = textEditTextarea.value.trim();
     desc.textContent = scenes[index].desc;
+  }else if(["phone","hours","closed"].includes(textEditTarget)){
+    if(!ownerData.businessInfo) ownerData.businessInfo = getBusinessInfo();
+    ownerData.businessInfo[textEditTarget] = textEditInput.value.trim() || defaultBusinessInfo[textEditTarget];
+    saveOwnerData();
+    applyBusinessInfo();
+    showSaved();
+    return;
   }else return;
   saveCurrentPageInfo(index);
   if(index>=6){
@@ -735,6 +762,9 @@ function setupTextLongPress(el,target){
 }
 setupTextLongPress(title,"title");
 setupTextLongPress(desc,"desc");
+setupTextLongPress(businessPhone,"phone");
+setupTextLongPress(businessHours,"hours");
+setupTextLongPress(businessClosed,"closed");
 
 app.addEventListener("click",e=>{
   if(window.skipContextCloseOnce){
@@ -764,6 +794,9 @@ const lineShare = document.getElementById("lineShare"), xShare = document.getEle
 const hiddenAdminTap = document.getElementById("hiddenAdminTap"), noticeBox = document.getElementById("noticeBox"), statusBadge = document.getElementById("statusBadge"), noticeTitle = document.getElementById("noticeTitle"), noticeText = document.getElementById("noticeText");
 const editBanner = document.getElementById("editBanner"), finishEditBtn = document.getElementById("finishEditBtn"), backToOwnerBtn = document.getElementById("backToOwnerBtn"), editModeBadge = document.getElementById("editModeBadge"), saveToast = document.getElementById("saveToast");
 let ownerData = JSON.parse(localStorage.getItem("casaOwnerDataV3") || "{}");
+const defaultBusinessInfo = {phone:"099-259-8005", hours:"11:00〜19:00", closed:"火曜日"};
+function getBusinessInfo(){ return Object.assign({}, defaultBusinessInfo, ownerData.businessInfo || {}); }
+function applyBusinessInfo(){ const b=getBusinessInfo(); if(businessPhone) businessPhone.textContent="📞 "+b.phone; if(businessHours) businessHours.textContent="🕒 "+b.hours; if(businessClosed) businessClosed.textContent="📅 "+(b.closed.includes("定休")?b.closed:(b.closed+"定休")); const tel=document.getElementById("telTopLink"); if(tel) tel.href="tel:"+String(b.phone).replace(/[^0-9+]/g,""); const tel2=document.getElementById("telLink"); if(tel2) tel2.href="tel:"+String(b.phone).replace(/[^0-9+]/g,""); }
 let editMode = false;
 let saveToastTimer=null;
 function showSaved(message="自動保存しました"){
@@ -1037,7 +1070,7 @@ app.addEventListener("mousedown",e=>{
 app.addEventListener("mouseup",()=>clearTimeout(emptyPressTimer));
 app.addEventListener("mouseleave",()=>clearTimeout(emptyPressTimer));
 
-render = function(animate=true){ const s=scenes[index]; if(animate)scene.classList.add("moving"); setTimeout(()=>{ scene.style.backgroundImage=`url("${s.img}")`; title.textContent=s.title; desc.textContent=s.desc; enter.style.display=s.enter?"block":"none"; contact.classList.toggle("show",!!s.showContact); contact.classList.remove("hide"); info.classList.remove("hide"); info.classList.toggle("editingText", !!editMode); hotspots.innerHTML=""; s.spots.forEach((h,hi)=>{ const b=document.createElement("button"); b.className="hotspot"+(editMode?" editing":""); b.style.left=h.x+"%"; b.style.top=h.y+"%"; b.innerHTML=`${h.icon}<span>${h.label}</span>`; if(editMode){
+render = function(animate=true){ const s=scenes[index]; if(animate)scene.classList.add("moving"); setTimeout(()=>{ scene.style.backgroundImage=`url("${s.img}")`; title.textContent=s.title; desc.textContent=s.desc; enter.style.display=s.enter?"block":"none"; contact.classList.toggle("show",!!s.showContact); contact.classList.remove("hide"); info.classList.remove("hide"); info.classList.toggle("editingText", !!editMode); applyBusinessInfo(); hotspots.innerHTML=""; s.spots.forEach((h,hi)=>{ const b=document.createElement("button"); b.className="hotspot"+(editMode?" editing":""); b.style.left=h.x+"%"; b.style.top=h.y+"%"; b.innerHTML=`${h.icon}<span>${h.label}</span>`; if(editMode){
         let pressTimer=null;
         let longPressed=false;
 
@@ -1077,7 +1110,7 @@ render = function(animate=true){ const s=scenes[index]; if(animate)scene.classLi
         makeDraggableHotspot(b,h,index);
       }else{ b.onclick=e=>{e.stopPropagation();play(tap,.25);openGallery(h.gallery)}; } hotspots.appendChild(b); }); dots.innerHTML=scenes.map((_,i)=>`<div class="dot ${i===index?"active":""}"></div>`).join(""); scene.classList.remove("moving"); },animate?130:0); };
 function makeDraggableHotspot(el,h,sceneIndex){ let dragging=false; const move=(clientX,clientY)=>{ const rect=app.getBoundingClientRect(); h.x=Math.max(4,Math.min(96,((clientX-rect.left)/rect.width)*100)); h.y=Math.max(4,Math.min(96,((clientY-rect.top)/rect.height)*100)); el.style.left=h.x+"%"; el.style.top=h.y+"%"; }; el.addEventListener("touchstart",e=>{dragging=true;e.stopPropagation();},{passive:false}); el.addEventListener("touchmove",e=>{if(!dragging)return;e.preventDefault();move(e.touches[0].clientX,e.touches[0].clientY);},{passive:false}); el.addEventListener("touchend",()=>{ if(!dragging)return; dragging=false; if(!ownerData.scenes) ownerData.scenes={}; ownerData.scenes[sceneIndex]={spots:scenes[sceneIndex].spots}; saveOwnerData(); }); }
-mergeOwnerData(); applyNotice();
+mergeOwnerData(); applyNotice(); applyBusinessInfo();
 
 render(false);
 </script>

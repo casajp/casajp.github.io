@@ -240,6 +240,57 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080706;color:#fff;fon
 .reorderGrip{font-size:18px;color:#d7b46a}.reorderTitle{font-size:14px;line-height:1.35;flex:1}.reorderSub{font-size:11px;color:#d8c8a8;margin-top:2px}
 .reorderBtn{width:100%;border-radius:15px;border:1px solid rgba(215,180,106,.38);background:rgba(215,180,106,.26);color:#fff;padding:13px 10px;font-size:15px;font-weight:700}
 .reorderCancel{width:100%;margin-top:8px;border-radius:15px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);color:#fff;padding:13px 10px;font-size:15px}
+
+/* ===== ホーム画面専用レイアウト調整 ===== */
+.app.homeScene .info{
+  top:19%;
+  bottom:auto;
+  left:7%;
+  right:7%;
+  padding:10px 13px;
+  border-radius:17px;
+  background:rgba(0,0,0,.60);
+  backdrop-filter:blur(11px);
+}
+.app.homeScene .info h1{font-size:16px;margin:0 0 2px}
+.app.homeScene .info p{font-size:11px;line-height:1.35}
+.app.homeScene .businessInfo{
+  margin-top:7px!important;
+  padding-top:7px!important;
+  display:grid!important;
+  grid-template-columns:1.25fr 1fr 1fr;
+  gap:5px!important;
+}
+.app.homeScene .businessInfo>div{
+  min-height:30px!important;
+  padding:6px 7px!important;
+  font-size:10.5px!important;
+  white-space:nowrap;
+}
+.app.homeScene .enter{
+  top:57.5%;
+  bottom:auto;
+  padding:8px 15px;
+  font-size:12px;
+  letter-spacing:.10em;
+  min-width:0;
+}
+.app.homeScene .doorPanel{
+  left:43%;
+  top:57%;
+  width:15%;
+  height:23%;
+  border-radius:3px;
+}
+.app.homeScene .doorFlash{
+  background:radial-gradient(circle at 50.5% 68%,rgba(255,236,178,.34),rgba(0,0,0,0) 25%);
+}
+@media(max-height:700px){
+  .app.homeScene .info{top:17%;padding:8px 10px}
+  .app.homeScene .businessInfo>div{font-size:10px!important;padding:5px!important}
+  .app.homeScene .enter{top:57%;font-size:11px;padding:7px 13px}
+}
+
 @media(min-width:780px){.app{max-width:520px;left:50%;transform:translateX(-50%);box-shadow:0 0 100px #000}body{background:linear-gradient(90deg,#050403,#17110c,#050403)}}
 </style>
 </head>
@@ -382,7 +433,7 @@ document.getElementById("mapTopLink").href=mapUrl;
 document.getElementById("telTopLink").href=telUrl;
 function play(a,vol=.4){if(!soundOn)return;try{a.pause();a.currentTime=0;a.volume=vol;a.play().catch(()=>{})}catch(e){}}
 soundBtn.onclick=()=>{soundOn=!soundOn;soundBtn.textContent=soundOn?"🔊":"🔇";play(tap,.25)}
-function render(animate=true){const s=scenes[index]; if(animate)scene.classList.add("moving"); setTimeout(()=>{scene.style.backgroundImage=`url("${s.img}")`;title.textContent=s.title;desc.textContent=s.desc;enter.style.display=s.enter?"block":"none";contact.classList.toggle("show",!!s.showContact);contact.classList.remove("hide");info.classList.remove("hide");hotspots.innerHTML="";s.spots.forEach(h=>{const b=document.createElement("button");b.className="hotspot";b.style.left=h.x+"%";b.style.top=h.y+"%";b.innerHTML=`${h.icon}<span>${h.label}</span>`;b.onclick=e=>{e.stopPropagation();play(tap,.25);openGallery(h.gallery)};hotspots.appendChild(b)});dots.innerHTML=scenes.map((_,i)=>`<div class="dot ${i===index?"active":""}"></div>`).join("");scene.classList.remove("moving")},animate?130:0)}
+function render(animate=true){const s=scenes[index]; if(animate)scene.classList.add("moving"); setTimeout(()=>{scene.style.backgroundImage=`url("${s.img}")`;title.textContent=s.title;desc.textContent=s.desc;app.classList.toggle("homeScene",index===0);enter.style.display=s.enter?"block":"none";contact.classList.toggle("show",!!s.showContact);contact.classList.remove("hide");info.classList.remove("hide");hotspots.innerHTML="";s.spots.forEach(h=>{const b=document.createElement("button");b.className="hotspot";b.style.left=h.x+"%";b.style.top=h.y+"%";b.innerHTML=`${h.icon}<span>${h.label}</span>`;b.onclick=e=>{e.stopPropagation();play(tap,.25);openGallery(h.gallery)};hotspots.appendChild(b)});dots.innerHTML=scenes.map((_,i)=>`<div class="dot ${i===index?"active":""}"></div>`).join("");scene.classList.remove("moving")},animate?130:0)}
 function next(){if(busy||index>=scenes.length-1)return;index++;play(swipe,.2);render(true)}
 function prev(){if(busy||index<=0)return;index--;play(swipe,.2);render(true)}
 enter.onclick=()=>{if(busy)return;busy=true;play(tap,.25);enter.style.display="none";contact.classList.add("hide");info.classList.add("hide");hotspots.innerHTML="";scene.classList.add("walkToDoor");setTimeout(()=>doorFlash.classList.add("on"),520);setTimeout(()=>{play(bell,.45);doorPanel.classList.add("open")},920);setTimeout(()=>fade.classList.add("on"),1200);setTimeout(()=>{index=1;scene.classList.remove("walkToDoor");scene.style.backgroundImage=`url("${scenes[index].img}")`;
@@ -1354,7 +1405,7 @@ app.addEventListener("mousedown",e=>{
 app.addEventListener("mouseup",()=>clearTimeout(emptyPressTimer));
 app.addEventListener("mouseleave",()=>clearTimeout(emptyPressTimer));
 
-render = function(animate=true){ const s=scenes[index]; if(animate)scene.classList.add("moving"); setTimeout(()=>{ scene.style.backgroundImage=`url("${s.img}")`; title.textContent=s.title; desc.textContent=s.desc; enter.style.display=s.enter?"block":"none"; contact.classList.toggle("show",!!s.showContact); contact.classList.remove("hide"); info.classList.remove("hide"); info.classList.toggle("editingText", !!editMode); if(businessInfo){ businessInfo.style.display = (index===0 ? "grid" : "none"); } applyBusinessInfo(); hotspots.innerHTML=""; s.spots.forEach((h,hi)=>{ const b=document.createElement("button"); b.className="hotspot"+(editMode?" editing":""); b.style.left=h.x+"%"; b.style.top=h.y+"%"; b.innerHTML=`${h.icon}<span>${h.label}</span>`; if(editMode){
+render = function(animate=true){ const s=scenes[index]; if(animate)scene.classList.add("moving"); setTimeout(()=>{ scene.style.backgroundImage=`url("${s.img}")`; title.textContent=s.title; desc.textContent=s.desc; app.classList.toggle("homeScene",index===0); enter.style.display=s.enter?"block":"none"; contact.classList.toggle("show",!!s.showContact); contact.classList.remove("hide"); info.classList.remove("hide"); info.classList.toggle("editingText", !!editMode); if(businessInfo){ businessInfo.style.display = (index===0 ? "grid" : "none"); } applyBusinessInfo(); hotspots.innerHTML=""; s.spots.forEach((h,hi)=>{ const b=document.createElement("button"); b.className="hotspot"+(editMode?" editing":""); b.style.left=h.x+"%"; b.style.top=h.y+"%"; b.innerHTML=`${h.icon}<span>${h.label}</span>`; if(editMode){
         let pressTimer=null;
         let longPressed=false;
 

@@ -257,7 +257,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#080706;color:#fff;fon
   <div class="notice" id="noticeBox"><span class="statusBadge" id="statusBadge">🟢 営業中</span><b id="noticeTitle">お知らせ</b><p id="noticeText"></p></div>
   <button class="hiddenAdminTap" id="hiddenAdminTap" aria-label="owner mode"></button>
   <button class="backToOwner" id="backToOwnerBtn" style="display:none!important">← 管理画面に戻る</button><div class="editModeBadge" id="editModeBadge">✏ 編集モード</div><div class="editBanner" id="editBanner"><button id="finishEditBtn">編集終了</button></div><div class="saveToast" id="saveToast">保存しました</div><div class="pageActionBar" id="pageActionBar"><button id="undoBtn" type="button">↩ 元に戻す</button><button id="pageReorderBtn" type="button">↕ ページ並び替え</button></div>
-  <section class="reorderPanel" id="reorderPanel"><div class="reorderCard"><div class="reorderHead"><h2>ページ並び替え</h2></div><p class="ownerSmall">ページを長押しして上下へ移動できます。右のスライダーでもスクロールできます。</p><div class="reorderScrollWrap"><div class="reorderScrollArea" id="reorderScrollArea"><div class="reorderList" id="reorderList"></div></div><div class="reorderScrollRail" id="reorderScrollRail"><button class="reorderScrollArrow" id="reorderScrollUp" type="button">▲</button><div class="reorderScrollTrack" id="reorderScrollTrack"><div class="reorderScrollThumb" id="reorderScrollThumb"></div></div><button class="reorderScrollArrow" id="reorderScrollDown" type="button">▼</button></div></div><button class="reorderBtn" id="finishReorderBtn" type="button">並び替え終了</button><button class="reorderCancel" id="cancelReorderBtn" type="button">キャンセル</button></div></section>
+  <section class="reorderPanel" id="reorderPanel"><div class="reorderCard"><div class="reorderHead"><h2>ページ並び替え</h2></div><div class="reorderScrollWrap"><div class="reorderScrollArea" id="reorderScrollArea"><div class="reorderList" id="reorderList"></div></div><div class="reorderScrollRail" id="reorderScrollRail"><button class="reorderScrollArrow" id="reorderScrollUp" type="button">▲</button><div class="reorderScrollTrack" id="reorderScrollTrack"><div class="reorderScrollThumb" id="reorderScrollThumb"></div></div><button class="reorderScrollArrow" id="reorderScrollDown" type="button">▼</button></div></div><button class="reorderBtn" id="finishReorderBtn" type="button">並び替え終了</button><button class="reorderCancel" id="cancelReorderBtn" type="button">キャンセル</button></div></section>
   <section class="sharePanel" id="sharePanel"><div class="shareCard"><div class="panelHead"><h2>CASAを共有</h2><button class="panelClose" id="shareClose">×</button></div><p class="ownerSmall">QRコードを見せる、URLをコピーする、スマホの共有機能で送ることができます。</p><div class="qrBox"><img id="qrImage" src="assets/qr-casa.png"  alt="CASA QR code"></div><div class="shareActions"><button id="copyUrlBtn">URLコピー</button><button id="nativeShareBtn">共有する</button><a id="lineShare" target="_blank" rel="noopener">LINE</a><a id="xShare" target="_blank" rel="noopener">X</a></div></div></section>
   <section class="ownerPanel" id="ownerPanel"><div class="ownerCard"><div class="panelHead"><h2>CASA 管理</h2><button class="panelClose" id="ownerClose">×</button></div>
     <div class="ownerTabs"><button class="ownerTabBtn active" data-tab="noticeTab">お知らせ</button><button class="ownerTabBtn" data-tab="pageTab">ページ</button><button class="ownerTabBtn" data-tab="photoTab">写真</button><button class="ownerTabBtn" data-tab="iconTab">アイコン</button><button class="ownerTabBtn" data-tab="shareTab">共有</button></div>
@@ -849,6 +849,8 @@ lineShare.href = "https://social-plugins.line.me/lineit/share?url=" + encodeURIC
 xShare.href = "https://twitter.com/intent/tweet?text=" + encodeURIComponent("CASA") + "&url=" + encodeURIComponent(SITE_URL);
 
 function scenesSnapshot(){ return scenes.map(p=>({img:p.img,title:p.title,desc:p.desc,enter:!!p.enter,showContact:!!p.showContact,spots:JSON.parse(JSON.stringify(p.spots||[]))})); }
+const baseScenesForUndo = scenesSnapshot();
+const baseGalleriesForUndo = JSON.parse(JSON.stringify(galleries));
 function persistAllScenes(){ ownerData.fullScenes = scenesSnapshot(); }
 let undoStack = JSON.parse(sessionStorage.getItem("casaUndoStackV1") || "[]");
 function saveUndoStack(){ sessionStorage.setItem("casaUndoStackV1", JSON.stringify(undoStack.slice(-12))); }
@@ -1073,13 +1075,43 @@ bindMenuAction(contextAddIcon,()=>{ closeEditContextMenu(); addIconAtEmptyPoint(
 bindMenuAction(contextAddPage,()=>{ closeEditContextMenu(); addNewPage(); });
 bindMenuAction(contextDeletePage,()=>{ closeEditContextMenu(); deleteCurrentPage(); });
 
+function restoreOwnerStateInPlace(serializedState){
+  let restored={};
+  try{ restored=JSON.parse(serializedState || "{}"); }
+  catch(e){ showSaved("復元データを読み込めませんでした"); return false; }
+
+  ownerData=restored;
+
+  scenes.splice(0,scenes.length,...baseScenesForUndo.map(p=>({
+    img:p.img,
+    title:p.title,
+    desc:p.desc,
+    enter:!!p.enter,
+    showContact:!!p.showContact,
+    spots:JSON.parse(JSON.stringify(p.spots||[]))
+  })));
+
+  Object.keys(galleries).forEach(k=>delete galleries[k]);
+  Object.keys(baseGalleriesForUndo).forEach(k=>{
+    galleries[k]=JSON.parse(JSON.stringify(baseGalleriesForUndo[k]));
+  });
+
+  mergeOwnerData();
+  index=Math.max(0,Math.min(index,scenes.length-1));
+  localStorage.setItem("casaOwnerDataV3",JSON.stringify(ownerData));
+  applyNotice();
+  applyBusinessInfo();
+  closeAllContextMenus();
+  if(reorderPanel) reorderPanel.classList.remove("open");
+  render(false);
+  refreshOwnerUI();
+  return true;
+}
 function undoLastChange(){
   if(!undoStack.length){ showSaved("戻せる変更がありません"); return; }
-  const prev = undoStack.pop();
+  const prev=undoStack.pop();
   saveUndoStack();
-  localStorage.setItem("casaOwnerDataV3", prev);
-  showSaved("1つ前に戻しました");
-  setTimeout(()=>location.reload(),420);
+  if(restoreOwnerStateInPlace(prev)) showSaved("1つ前の変更に戻しました");
 }
 if(undoBtn) undoBtn.onclick = undoLastChange;
 

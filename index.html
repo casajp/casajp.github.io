@@ -1087,18 +1087,28 @@ function pasteCopiedIconAtEmptyPoint(){
   showSaved("アイコンを貼り付けました");
 }
 function addIconAtEmptyPoint(){
-  const firstGallery = Object.keys(galleries)[0] || "clothes";
+  const unique = "casa_icon_" + index + "_" + Date.now();
+
+  // 新規アイコンの画像一覧は0枚から開始
+  galleries[unique] = [];
+
   const newHotspot = {
     x: emptyMenuPoint.x,
     y: emptyMenuPoint.y,
     label: "見る",
     icon: "＋",
-    gallery: firstGallery
+    gallery: unique
   };
+
   scenes[index].spots.push(newHotspot);
   const newIndex = scenes[index].spots.length - 1;
+
+  if(!ownerData.galleries) ownerData.galleries={};
+  ownerData.galleries[unique]=galleries[unique];
+
   if(!ownerData.scenes) ownerData.scenes={};
   ownerData.scenes[index]={spots:scenes[index].spots};
+
   saveOwnerData();
   render(false);
   refreshOwnerUI();

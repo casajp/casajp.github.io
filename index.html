@@ -506,6 +506,7 @@ function closePasswordDialog(){
 passwordCancel.onclick = closePasswordDialog;
 passwordSubmit.onclick = ()=>{
   if(ownerPasswordInput.value === OWNER_PASSWORD){
+    try{ localStorage.setItem(OWNER_AUTH_KEY,"1"); }catch(e){}
     closePasswordDialog();
     startDirectEditMode();
   }else{
@@ -864,6 +865,7 @@ const UPLOAD_PRESET = "casa_unsigned";
 // Unsigned Upload用。API Keyは使いません。Cloudinary側でこのPresetをUnsignedにしてください。
 const CLOUD_FOLDER = "casa";
 const OWNER_PASSWORD = "Yuika";
+const OWNER_AUTH_KEY = "casaOwnerPasswordVerifiedV1";
 const SITE_URL = "https://casajp.github.io/";
 const sharePanel = document.getElementById("sharePanel"), shareBtn = document.getElementById("shareBtn"), shareClose = document.getElementById("shareClose");
 const qrImage = document.getElementById("qrImage"), copyUrlBtn = document.getElementById("copyUrlBtn"), nativeShareBtn = document.getElementById("nativeShareBtn");
@@ -950,7 +952,13 @@ hiddenAdminTap.onclick=()=>{
   adminTapTimer=setTimeout(()=>adminTapCount=0,1200);
   if(adminTapCount>=10){
     adminTapCount=0;
-    openPasswordDialog();
+    let passwordVerified=false;
+    try{ passwordVerified=localStorage.getItem(OWNER_AUTH_KEY)==="1"; }catch(e){}
+    if(passwordVerified){
+      startDirectEditMode();
+    }else{
+      openPasswordDialog();
+    }
   }
 };
 
